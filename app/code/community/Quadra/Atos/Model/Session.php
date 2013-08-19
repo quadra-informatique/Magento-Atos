@@ -20,6 +20,7 @@ class Quadra_Atos_Model_Session extends Mage_Core_Model_Session_Abstract {
     protected $_quoteId;
     protected $_response;
     protected $_redirectMessage;
+    protected $_redirectTitle;
 
     /**
      * Class constructor. Initialize Atos/Sips Standard session namespace
@@ -36,6 +37,7 @@ class Quadra_Atos_Model_Session extends Mage_Core_Model_Session_Abstract {
         $this->_quoteId = null;
         $this->_response = null;
         $this->_redirectMessage = null;
+        $this->_redirectTitle = null;
     }
 
     protected function _getQuoteIdKey() {
@@ -72,6 +74,18 @@ class Quadra_Atos_Model_Session extends Mage_Core_Model_Session_Abstract {
 
     public function getRedirectMessage() {
         return $this->getData($this->_getRedirectMessageKey());
+    }
+
+    protected function _getRedirectTitleKey() {
+        return 'redirect_title_' . Mage::app()->getStore()->getWebsiteId();
+    }
+
+    public function setRedirectTitle($title) {
+        $this->setData($this->_getRedirectTitleKey(), $title);
+    }
+
+    public function getRedirectTitle() {
+        return $this->getData($this->_getRedirectTitleKey());
     }
 
 }

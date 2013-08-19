@@ -120,25 +120,27 @@ class Quadra_Atos_Model_Api_Response {
     public function describeResponse($response, $return = 'string') {
         $array = array();
 
-        $string = Mage::helper('atos')->__('Numero de transaction : %s', $response['transaction_id']) . "\n";
-        $string.= Mage::helper('atos')->__('Mode de capture : %s', $response['capture_mode']) . "\n";
+        $string = Mage::helper('atos')->__('Transaction number: %s', $response['transaction_id']) . "<br />";
+
+        if (isset($response['capture_mode']))
+        $string.= Mage::helper('atos')->__('Mode de capture : %s', $response['capture_mode']) . "<br />";
 
         if (isset($response['capture_day']) && is_numeric($response['capture_day'])) {
             if ($response['capture_day'] == 0) {
-                $string.= Mage::helper('atos')->__('Jour avant la capture : capture immediate') . "\n";
+                $string.= Mage::helper('atos')->__('Day before capture: immediate capture') . "<br />";
             } else {
-                $string.= Mage::helper('atos')->__('Jour avant la capture : %s', $response['capture_day']) . "\n";
+                $string.= Mage::helper('atos')->__('Day before capture: %s', $response['capture_day']) . "<br />";
             }
         }
 
-        $string.= Mage::helper('atos')->__('Type de carte de credit : %s', $response['payment_means']) . "\n";
+        $string.= Mage::helper('atos')->__('Card type: %s', $response['payment_means']) . "<br />";
 
         // Credit card number
         if (isset($response['card_number']) && !empty($response['card_number'])) {
             $cc = explode('.', $response['card_number']);
             $array['card_number'] = $cc[0] . ' #### #### ##' . $cc[1];
 
-            $string.= Mage::helper('atos')->__('Numero de carte bancaire : %s', $array['card_number']) . "\n";
+            $string.= Mage::helper('atos')->__('Card number: %s', $array['card_number']) . "<br />";
         }
 
         if (isset($response['cvv_flag'])) {
@@ -146,33 +148,33 @@ class Quadra_Atos_Model_Api_Response {
                 case '1':
                     switch ($response['cvv_response_code']) {
                         case '4E':
-                            $array['cvv_response_code'] = "Numero de controle incorrect";
+                            $array['cvv_response_code'] = Mage::helper('atos')->__('Incorrect control number');
                             break;
                         case '4D':
-                            $array['cvv_response_code'] = "Numero de controle correct";
+                            $array['cvv_response_code'] = Mage::helper('atos')->__('Correct control number');
                             break;
                         case '50':
-                            $array['cvv_response_code'] = "Numero de controle non traite";
+                            $array['cvv_response_code'] = Mage::helper('atos')->__('Untreated control number');
                             break;
                         case '53':
-                            $array['cvv_response_code'] = "Le numero de controle est absent de la demande d'autorisation";
+                            $array['cvv_response_code'] = Mage::helper('atos')->__('The control number is absent in the authorization request');
                             break;
                         case '55':
-                            $array['cvv_response_code'] = "La banque de l'internaute n'est pas certifiee, le controle n'a pu etre effectue";
+                            $array['cvv_response_code'] = Mage::helper('atos')->__('The user\'s bank is not certified, the control was not able to be made');
                             break;
                         case 'NO':
-                            $array['cvv_response_code'] = "Pas de cryptogramme sur la carte";
+                            $array['cvv_response_code'] = Mage::helper('atos')->__('No cryptogram on the card');
                             break;
                         default:
-                            $array['cvv_response_code'] = "Aucune information sur le cryptogramme de la carte";
+                            $array['cvv_response_code'] = Mage::helper('atos')->__('No information about the cryptogram of the card');
                             break;
                     }
 
-                    $string .= Mage::helper('atos')->__('A propos du cryptogramme de la carte : %s', $array['cvv_response_code']) . "\n";
+                    $string .= Mage::helper('atos')->__('About the cryptogram of the card: %s', $array['cvv_response_code']) . "<br />";
 
                     if (isset($response['cvv_key'])) {
                         $array['cvv_key'] = $response['cvv_key'];
-                        $string .= Mage::helper('atos')->__('Cryptogramme de la carte de credit : %s', $response['cvv_key']) . "\n";
+                        $string .= Mage::helper('atos')->__('Cryptogram of the card: %s', $response['cvv_key']) . "<br />";
                     }
                     break;
             }
@@ -181,151 +183,147 @@ class Quadra_Atos_Model_Api_Response {
         if (isset($response['response_code'])) {
             switch ($response['response_code']) {
                 case '00':
-                    $array['response_code'] = "Autorisation acceptee";
+                    $array['response_code'] = Mage::helper('atos')->__('Accepted authorization');
                     break;
                 case '02':
-                    $array['response_code'] = "Demande d'autorisation par telephone a la banque a cause d'un depassement de plafond d'autorisation sur la carte";
+                    $array['response_code'] = Mage::helper('atos')->__('Authorization request by telephone at the bank because of the ceiling of authorization on the card is exceeded');
                     break;
                 case '03':
-                    $array['response_code'] = "Champ merchant_id invalide, verifier la valeur renseignee dans la requete ou contrat de vente a distance inexistant, contacter votre banque.";
+                    $array['response_code'] = Mage::helper('atos')->__('Field merchant_id is invalid, verify the value in the request or non-existent remote sale contract, contact your bank');
                     break;
                 case '05':
-                    $array['response_code'] = "Autorisation refusee";
+                    $array['response_code'] = Mage::helper('atos')->__('Refused authorization');
                     break;
                 case '12':
-                    $array['response_code'] = "Transaction invalide, verifier les parametres transferes dans la requete.";
+                    $array['response_code'] = Mage::helper('atos')->__('Invalid transaction, verify the parameters transferred in the request');
                     break;
                 case '17':
-                    $array['response_code'] = "Annulation de l'internaute";
+                    $array['response_code'] = Mage::helper('atos')->__('Canceled by user');
                     break;
                 case '30':
-                    $array['response_code'] = "Erreur de format";
+                    $array['response_code'] = Mage::helper('atos')->__('Format error');
                     break;
                 case '34':
-                    $array['response_code'] = "Suspicion de fraude";
+                    $array['response_code'] = Mage::helper('atos')->__('Fraud suspicion');
                     break;
                 case '75':
-                    $array['response_code'] = "Nombre de tentatives de saisie du numero de carte depasse";
+                    $array['response_code'] = Mage::helper('atos')->__('Number of attempts of card\'s number seizure is exceeded');
                     break;
                 case '90':
-                    $array['response_code'] = "Service temporairement indisponible";
+                    $array['response_code'] = Mage::helper('atos')->__('Service temporarily unavailable');
                     break;
                 case '94':
-                    $array['response_code'] = "Transaction deja enregistree";
+                    $array['response_code'] = Mage::helper('atos')->__('Transaction already saved');
                     break;
                 default:
-                    $array['response_code'] = "ATOS Transaction rejetee - code invalide " . $response['response_code'];
+                    $array['response_code'] = Mage::helper('atos')->__('Rejected ATOS Transaction - invalid code %s', $response['response_code']);
             }
 
-            $string .= Mage::helper('atos')->__('Code reponse de la banque : %s', $array['response_code']) . "\n";
+            $string .= Mage::helper('atos')->__('Payment platform response: %s', $array['response_code']) . "<br />";
         }
 
         if (isset($response['bank_response_code'])) {
             if (in_array($response['payment_means'], array('CB', 'VISA', 'MASTERCARD'))) {
                 switch ($response['bank_response_code']) {
                     case '00':
-                        $array['bank_response_code'] = "Transaction approuvee ou traitee avec succes";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Transaction approved or treated with success');
                         break;
                     case '02':
-                        $array['bank_response_code'] = "Contacter l'emetteur de carte";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Contact card issuer');
                         break;
                     case '03':
-                        $array['bank_response_code'] = "Accepteur invalide";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Invalid acceptor');
                         break;
                     case '04':
-                        $array['bank_response_code'] = "Conserver la carte";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Keep the card');
                         break;
                     case '05':
-                        $array['bank_response_code'] = "Ne pas honorer";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Do not honor');
                         break;
                     case '07':
-                        $array['bank_response_code'] = "Conserver la carte, conditions speciales";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Keep the card, special conditions');
                         break;
                     case '08':
-                        $array['bank_response_code'] = "Approuver apres identification";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Approve after identification');
                         break;
                     case '12':
-                        $array['bank_response_code'] = "Transaction invalide";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Invalid transaction');
                         break;
                     case '13':
-                        $array['bank_response_code'] = "Montant invalide";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Invalid amount');
                         break;
                     case '14':
-                        $array['bank_response_code'] = "Numero de porteur invalide";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Invalid carrier number');
                         break;
                     case '15':
-                        $array['bank_response_code'] = "Emetteur de carte inconnu";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Unknown card issuer');
                         break;
                     case '30':
-                        $array['bank_response_code'] = "Erreur de format";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Format error');
                         break;
                     case '31':
-                        $array['bank_response_code'] = "Identifiant de l'organisme acquereur inconnu";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Unknown buyer body identifier');
                         break;
                     case '33':
-                        $array['bank_response_code'] = "Date de validite de la carte depassee";
+                    case '54':
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Card validity date exceeded');
                         break;
                     case '34':
-                        $array['bank_response_code'] = "Suspicion de fraude";
+                    case '59':
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Fraud suspicion');
                         break;
                     case '41':
-                        $array['bank_response_code'] = "Carte perdue";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Lost card');
                         break;
                     case '43':
-                        $array['bank_response_code'] = "Carte volee";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Stolen card');
                         break;
                     case '51':
-                        $array['bank_response_code'] = "Provision insuffisante ou credit depasse";
-                        break;
-                    case '54':
-                        $array['bank_response_code'] = "Date de validite de la carte depassee";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Insufficient reserve or exceeded credit');
                         break;
                     case '56':
-                        $array['bank_response_code'] = "Carte absente du fichier";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Card absent in the file');
                         break;
                     case '57':
-                        $array['bank_response_code'] = "Transaction non permise a ce porteur";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Transaction not allowed to this carrier');
                         break;
                     case '58':
-                        $array['bank_response_code'] = "Transaction interdite au terminal";
-                        break;
-                    case '59':
-                        $array['bank_response_code'] = "Suspicion de fraude";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Transaction forbidden to terminal');
                         break;
                     case '60':
-                        $array['bank_response_code'] = "L'accepteur de carte doit contacter l'acquereur";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('The card acceptor has to contact the buyer');
                         break;
                     case '61':
-                        $array['bank_response_code'] = "Depasse la limite du montant de retrait";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Exceed the limit of the retreat amount');
                         break;
                     case '63':
-                        $array['bank_response_code'] = "Regles de securite non respectees";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Safety rules not respected');
                         break;
                     case '68':
-                        $array['bank_response_code'] = "Reponse non parvenue ou recue trop tard";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Response not reached or received too late');
                         break;
                     case '90':
-                        $array['bank_response_code'] = "Arret momentane du systeme";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('System Temporary Stoppage');
                         break;
                     case '91':
-                        $array['bank_response_code'] = "Emetteur de cartes inaccessible";
+                        $array['bank_response_code'] = Mage::helper('atos')->__("Inaccessible card issuer");
                         break;
                     case '96':
-                        $array['bank_response_code'] = "Mauvais fonctionnement du systeme";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('System malfunction');
                         break;
                     case '97':
-                        $array['bank_response_code'] = "Echeance de la temporisation de surveillance globale";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Term of the time-lag of global surveillance');
                         break;
                     case '98':
-                        $array['bank_response_code'] = "Serveur indisponible routage reseau demande a nouveau";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Server unavailable, network routing asked again');
                         break;
                     case '99':
-                        $array['bank_response_code'] = "Incident domaine initiateur";
+                        $array['bank_response_code'] = Mage::helper('atos')->__('Initiator domain incident');
                         break;
                 }
 
                 if (isset($array['bank_response_code'])) {
-                    $string .= Mage::helper('atos')->__('Code reponse de la Banque : %s', $array['bank_response_code']) . "\n";
+                    $string .= Mage::helper('atos')->__('Bank response: %s', $array['bank_response_code']) . "<br />";
                 }
             }
         }
@@ -333,33 +331,33 @@ class Quadra_Atos_Model_Api_Response {
         if (isset($response['complementary_code'])) {
             switch ($response['complementary_code']) {
                 case '00':
-                    $array['complementary_code'] = "Tous les controles auxquels vous avez adheres se sont effectues avec succes";
+                    $array['complementary_code'] = Mage::helper('atos')->__('All the controls to which you subscribed were made successfully');
                     break;
                 case '02':
-                    $array['complementary_code'] = "La carte utilisee a depasse l'encours autorise";
+                    $array['complementary_code'] = Mage::helper('atos')->__('The used card exceeded the authorized outstanding');
                     break;
                 case '03':
-                    $array['complementary_code'] = "La carte utilisee appartient a la liste grise du commercant";
+                    $array['complementary_code'] = Mage::helper('atos')->__('The used card belongs to the merchant\'s grey list');
                     break;
                 case '05':
-                    $array['complementary_code'] = "Le BIN de la carte utilisee appartient a une plage non referencee dans la table des BIN de la plate-forme MERCANET";
+                    $array['complementary_code'] = Mage::helper('atos')->__('The BIN of the used card belongs to a range not referenced in the table of BIN of the MERCANET platform');
                     break;
                 case '06':
-                    $array['complementary_code'] = "Le numero de carte n'est pas dans une plage de meme nationalite que celle du commercant";
+                    $array['complementary_code'] = Mage::helper('atos')->__('The card number is not in a range of the same nationality as that of the merchant');
                     break;
                 case '99':
-                    $array['complementary_code'] = "Le serveur MERCANET a un rencontre un probleme lors du traitement d�un des controles locaux complementaires";
+                    $array['complementary_code'] = Mage::helper('atos')->__('The MERCANET server encountered a problem during the processing of one of the additional local controls');
                     break;
             }
 
             if (isset($array['complementary_code'])) {
-                $string .= Mage::helper('atos')->__('Controle supplementaire : %s', $array['complementary_code']) . "\n";
+                $string .= Mage::helper('atos')->__('Additional control: %s', $array['complementary_code']) . "<br />";
             }
         }
 
         if (isset($response['data'])) {
             $array['data'] = $response['data'];
-            $string .= $response['data'] . "\n";
+            $string .= Mage::helper('atos')->__('Other data: %s', $response['data']) . "<br />";
         }
 
         if ($return == 'string') {

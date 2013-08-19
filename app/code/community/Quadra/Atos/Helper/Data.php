@@ -28,4 +28,28 @@ class Quadra_Atos_Helper_Data extends Mage_Core_Helper_Abstract {
         Mage::log($class . ' ' . $function . ': ' . $message, Zend_Log::ERR, 'atos.log', true);
     }
 
+    public function reorder($incrementId) {
+        $cart = Mage::getSingleton('checkout/cart');
+        $order = Mage::getModel('sales/order')->loadByIncrementId($incrementId);
+
+        if ($order->getId()) {
+            $items = $order->getItemsCollection();
+            foreach ($items as $item) {
+                try {
+                    $cart->addOrderItem($item);
+                } catch (Mage_Core_Exception $e) {
+                    if (Mage::getSingleton('checkout/session')->getUseNotice(true)) {
+                        Mage::getSingleton('checkout/session')->addNotice($e->getMessage());
+                    } else {
+                        Mage::getSingleton('checkout/session')->addError($e->getMessage());
+                    }
+                } catch (Exception $e) {
+                    Mage::getSingleton('checkout/session')->addException($e, Mage::helper('checkout')->__('Cannot add the item to shopping cart.'));
+                }
+            }
+        }
+
+        $cart->save();
+    }
+
 }

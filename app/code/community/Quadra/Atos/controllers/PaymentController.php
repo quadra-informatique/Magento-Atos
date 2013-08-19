@@ -92,15 +92,24 @@ class Quadra_Atos_PaymentController extends Mage_Core_Controller_Front_Action {
         // Set redirect URL
         $response['redirect_url'] = '*/*/failure';
         // Set redirect message
-        $this->getAtosSession()->setRedirectMessage($this->__('Process payment was cancelled, your order was automatically cancelled.'));
+        $this->getAtosSession()->setRedirectTitle($this->__('Your payment has been rejected'));
+        $describedResponse = Mage::getSingleton('atos/api_response')->describeResponse($response['hash'], 'array');
+        $this->getAtosSession()->setRedirectMessage($this->__('The payment platform has rejected your transaction with the message: <strong>%s</strong>.', $describedResponse['response_code']));
 
         // Cancel order
         if ($response['hash']['order_id']) {
             $order = Mage::getModel('sales/order')->loadByIncrementId($response['hash']['order_id']);
+            if ($response['hash']['response_code'] == 17) {
+                $message = Mage::getSingleton('atos/api_response')->describeResponse($response['hash']);
+            } else {
+                $message = $this->__('Automatic cancel');
+                $this->getAtosSession()->setRedirectMessage($this->__('The payment platform has rejected your transaction with the message: <strong>%s</strong>, because the bank send the error: <strong>%s</strong>.', $describedResponse['response_code'], $describedResponse['bank_response_code']));
+            }
             if ($order->getId()) {
+                Mage::helper('atos')->reorder($response['hash']['order_id']);
                 $order->cancel()
-                        ->addStatusToHistory($order->getStatus(), $this->__('Order was canceled by customer'))
-                        ->save();
+                      ->addStatusToHistory($order->getStatus(), $message)
+                      ->save();
             }
         }
 
@@ -156,7 +165,7 @@ class Quadra_Atos_PaymentController extends Mage_Core_Controller_Front_Action {
             case '00':
                 if ($order->getId()) {
                     $order->addStatusToHistory($order->getStatus(), $this->__('Customer returned successfully from Atos/Sips payment platform.'))
-                            ->save();
+                          ->save();
                 }
                 $this->getCheckoutSession()->getQuote()->setIsActive(false)->save();
                 // Set redirect URL
@@ -166,13 +175,16 @@ class Quadra_Atos_PaymentController extends Mage_Core_Controller_Front_Action {
                 // Log error
                 $errorMessage = $this->__('Error: code %s.<br /> %s', $response['hash']['response_code'], $response['hash']['error']);
                 Mage::helper('atos')->logError(get_class($this), __FUNCTION__, $errorMessage);
-                // Add error on order message
+                // Add error on order message and reorder
                 if ($order->getId()) {
+                    Mage::helper('atos')->reorder($response['hash']['order_id']);
                     $order->addStatusToHistory($order->getStatus(), $errorMessage)
-                            ->save();
+                          ->save();
                 }
                 // Set redirect message
-                $this->getAtosSession()->setRedirectMessage($this->__('(Response Code %s) Error with payment module', $response['hash']['response_code']));
+                $this->getAtosSession()->setRedirectTitle($this->__('Your payment has been rejected'));
+                $describedResponse = Mage::getSingleton('atos/api_response')->describeResponse($response['hash']);
+                $this->getAtosSession()->setRedirectMessage($this->__('The payment platform has rejected your transaction with the message: <strong>%s</strong>, because the bank send the error: <strong>%s</strong>.', $describedResponse['response_code'], $describedResponse['bank_response_code']));
                 // Set redirect URL
                 $response['redirect_url'] = '*/*/failure';
                 break;
@@ -218,7 +230,7 @@ class Quadra_Atos_PaymentController extends Mage_Core_Controller_Front_Action {
             }
 
             if (!$isIpOk) {
-                Mage::log(implde(', ', $ipAdresses) . ' tries to connect to our server' . "\n", null, 'atos.log');
+                Mage::log(implode(', ', $ipAdresses) . ' tries to connect to our server' . "\n", null, 'atos.log');
                 return;
             }
         }
@@ -233,7 +245,7 @@ class Quadra_Atos_PaymentController extends Mage_Core_Controller_Front_Action {
             case '00':
                 if ($order->getId()) {
                     $message = $this->__('Payment accepted by Sips');
-                    $message .= ' - ' . Mage::getSingleton('atos/api_response')->describeResponse($response['hash']);
+                    $message .= '<br /><br />' . Mage::getSingleton('atos/api_response')->describeResponse($response['hash']);
                     // Update state and status order
                     $order->setState(Mage_Sales_Model_Order::STATE_PROCESSING, Quadra_Atos_Model_Config::STATUS_ACCEPTED, $message);
                     // Send confirmation email
@@ -248,7 +260,7 @@ class Quadra_Atos_PaymentController extends Mage_Core_Controller_Front_Action {
             default:
                 if ($order->getId()) {
                     $message = $this->__('Payment rejected by Sips');
-                    $message .= ' - ' . Mage::getSingleton('atos/api_response')->describeResponse($response['hash']);
+                    $message .= '<br /><br />' . Mage::getSingleton('atos/api_response')->describeResponse($response['hash']);
                     // Update state and status order
                     $order->setState(Mage_Sales_Model_Order::STATE_PAYMENT_REVIEW, Quadra_Atos_Model_Config::STATUS_REFUSED, $message);
                     // Save order
@@ -263,6 +275,7 @@ class Quadra_Atos_PaymentController extends Mage_Core_Controller_Front_Action {
      */
     public function failureAction() {
         $this->loadLayout();
+        $this->getLayout()->getBlock('atos_failure')->setTitle($this->getAtosSession()->getRedirectTitle());
         $this->getLayout()->getBlock('atos_failure')->setMessage($this->getAtosSession()->getRedirectMessage());
         $this->getAtosSession()->unsetAll();
         $this->renderLayout();
