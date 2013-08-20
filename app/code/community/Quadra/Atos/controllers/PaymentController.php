@@ -89,8 +89,14 @@ class Quadra_Atos_PaymentController extends Mage_Core_Controller_Front_Action {
 
         // Get Sips Server Response
         $response = $this->_getAtosResponse($_REQUEST['DATA']);
+
+        // Debug
+        if ($this->getMethodInstance()->getConfigData('debug'))
+            $this->getMethodInstance()->debugResponse($response['hash'], 'Cancel');
+
         // Set redirect URL
         $response['redirect_url'] = '*/*/failure';
+
         // Set redirect message
         $this->getAtosSession()->setRedirectTitle($this->__('Your payment has been rejected'));
         $describedResponse = Mage::getSingleton('atos/api_response')->describeResponse($response['hash'], 'array');
@@ -115,13 +121,6 @@ class Quadra_Atos_PaymentController extends Mage_Core_Controller_Front_Action {
 
         // Save Atos/Sips response in session
         $this->getAtosSession()->setResponse($response);
-
-        // Debug mode is active
-        if ($response['hash']['response_code'] == 0 && !empty($response['hash']['error'])) {
-            $this->_redirect('*/*/debug');
-            return;
-        }
-
         $this->_redirect($response['redirect_url'], array('_secure' => true));
     }
 
@@ -142,6 +141,10 @@ class Quadra_Atos_PaymentController extends Mage_Core_Controller_Front_Action {
 
         // Get Sips Server Response
         $response = $this->_getAtosResponse($_REQUEST['DATA']);
+
+        // Debug
+        if ($this->getMethodInstance()->getConfigData('debug'))
+            $this->getMethodInstance()->debugResponse($response['hash'], 'Normal');
 
         // Check if merchant ID matches
         if ($response['hash']['merchant_id'] != $this->getConfig()->getMerchantId()) {
@@ -193,12 +196,6 @@ class Quadra_Atos_PaymentController extends Mage_Core_Controller_Front_Action {
         // Save Atos/Sips response in session
         $this->getAtosSession()->setResponse($response);
 
-        // Debug mode is active
-        if ($response['hash']['response_code'] == 0 && !empty($response['hash']['error'])) {
-            $this->_redirect('*/*/debug');
-            return;
-        }
-
         $this->_redirect($response['redirect_url'], array('_secure' => true));
     }
 
@@ -215,6 +212,10 @@ class Quadra_Atos_PaymentController extends Mage_Core_Controller_Front_Action {
 
         // Get Sips Server Response
         $response = $this->_getAtosResponse($_REQUEST['DATA']);
+
+        // Debug
+        if ($this->getMethodInstance()->getConfigData('debug'))
+            $this->getMethodInstance()->debugResponse($response['hash'], 'Automatic');
 
         // Check IP address
         if ($this->getMethodInstance()->getConfig()->getCheckByIpAddress()) {
@@ -279,17 +280,6 @@ class Quadra_Atos_PaymentController extends Mage_Core_Controller_Front_Action {
         $this->getLayout()->getBlock('atos_failure')->setMessage($this->getAtosSession()->getRedirectMessage());
         $this->getAtosSession()->unsetAll();
         $this->renderLayout();
-    }
-
-    /**
-     * When debug mode is active
-     */
-    public function debugAction() {
-        $this->getResponse()->setBody(
-                $this->getLayout()
-                        ->createBlock('atos/debug', 'atos_debug')
-                        ->setObject($this->getAtosSession()->getResponse())
-                        ->toHtml());
     }
 
     public function saveAuroreDobAction() {

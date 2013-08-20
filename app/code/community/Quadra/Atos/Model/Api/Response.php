@@ -122,7 +122,7 @@ class Quadra_Atos_Model_Api_Response {
 
         $string = Mage::helper('atos')->__('Transaction number: %s', $response['transaction_id']) . "<br />";
 
-        if (isset($response['capture_mode']))
+        if (isset($response['capture_mode']) && strlen($response['capture_mode']) > 0)
         $string.= Mage::helper('atos')->__('Mode de capture : %s', $response['capture_mode']) . "<br />";
 
         if (isset($response['capture_day']) && is_numeric($response['capture_day'])) {
@@ -170,7 +170,7 @@ class Quadra_Atos_Model_Api_Response {
                             break;
                     }
 
-                    $string .= Mage::helper('atos')->__('About the cryptogram of the card: %s', $array['cvv_response_code']) . "<br />";
+                    $string .= Mage::helper('atos')->__('About the cryptogram of the card: %s', '[' . $response['cvv_response_code'] . '] ' . $array['cvv_response_code']) . "<br />";
 
                     if (isset($response['cvv_key'])) {
                         $array['cvv_key'] = $response['cvv_key'];
@@ -219,7 +219,7 @@ class Quadra_Atos_Model_Api_Response {
                     $array['response_code'] = Mage::helper('atos')->__('Rejected ATOS Transaction - invalid code %s', $response['response_code']);
             }
 
-            $string .= Mage::helper('atos')->__('Payment platform response: %s', $array['response_code']) . "<br />";
+            $string .= Mage::helper('atos')->__('Payment platform response: %s', '[' . $response['response_code'] . '] ' . $array['response_code']) . "<br />";
         }
 
         if (isset($response['bank_response_code'])) {
@@ -323,7 +323,7 @@ class Quadra_Atos_Model_Api_Response {
                 }
 
                 if (isset($array['bank_response_code'])) {
-                    $string .= Mage::helper('atos')->__('Bank response: %s', $array['bank_response_code']) . "<br />";
+                    $string .= Mage::helper('atos')->__('Bank response: %s', '[' . $response['bank_response_code'] . '] ' . $array['bank_response_code']) . "<br />";
                 }
             }
         }
@@ -351,7 +351,7 @@ class Quadra_Atos_Model_Api_Response {
             }
 
             if (isset($array['complementary_code'])) {
-                $string .= Mage::helper('atos')->__('Additional control: %s', $array['complementary_code']) . "<br />";
+                $string .= Mage::helper('atos')->__('Additional control: %s', '[' . $response['complementary_code'] . '] ' . $array['complementary_code']) . "<br />";
             }
         }
 

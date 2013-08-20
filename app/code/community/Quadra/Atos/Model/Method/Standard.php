@@ -62,6 +62,10 @@ class Quadra_Atos_Model_Method_Standard extends Quadra_Atos_Model_Method_Abstrac
         // Initialisation du chemin de l'executable request
 	$binPath = $this->getConfig()->getBinRequest();
 
+        // Debug
+        if ($this->getConfigData('debug'))
+            $this->debugRequest($parameters);
+
         $sips = $this->getApiRequest()->doRequest($parameters, $binPath);
 
         if (($sips['code'] == "") && ($sips['error'] == "")) {
@@ -83,7 +87,7 @@ class Quadra_Atos_Model_Method_Standard extends Quadra_Atos_Model_Method_Abstrac
      * @return string
      */
     protected function _getPaymentMeans() {
-        return str_replace(',', ',2,', Mage::getStoreConfig('payment/atos_standard/cctypes')) . ',2';
+        return str_replace(',', ',2,', $this->getConfigData('cctypes')) . ',2';
     }
 
     /**
@@ -128,7 +132,7 @@ class Quadra_Atos_Model_Method_Standard extends Quadra_Atos_Model_Method_Abstrac
      * @return int
      */
     protected function _getCaptureDay() {
-        return (int) Mage::getStoreConfig('payment/atos_standard/capture_day');
+        return (int) $this->getConfigData('capture_day');
     }
 
     /**
@@ -137,7 +141,7 @@ class Quadra_Atos_Model_Method_Standard extends Quadra_Atos_Model_Method_Abstrac
      * @return string
      */
     protected function _getCaptureMode() {
-        return $this->getConfig()->getPaymentAction(Mage::getStoreConfig('payment/atos_standard/payment_action'));
+        return $this->getConfig()->getPaymentAction($this->getConfigData('payment_action'));
     }
 
 }

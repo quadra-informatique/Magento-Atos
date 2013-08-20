@@ -233,4 +233,22 @@ abstract class Quadra_Atos_Model_Method_Abstract extends Mage_Payment_Model_Meth
         return Mage::getStoreConfig('atos_api/config_bin_files/request_path');
     }
 
+    protected function _debug($data, $title = '') {
+        Mage::log($title.preg_replace('/ /', "\n", $data), Zend_Log::DEBUG, 'payment_' . $this->getCode() . '.log', true);
+    }
+
+    public function debugRequest($data) {
+        $this->_debug($data, "Request data:\n");
+    }
+
+    public function debugResponse($data, $from = '') {
+        $stringData = '';
+        foreach ($data as $key => $value) {
+            if ($value)
+                $stringData .= "{$key}={$value} ";
+        }
+
+        $this->_debug(trim($stringData), "{$from} response data:\n");
+    }
+
 }

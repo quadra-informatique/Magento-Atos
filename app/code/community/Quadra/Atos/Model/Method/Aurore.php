@@ -58,6 +58,10 @@ class Quadra_Atos_Model_Method_Aurore extends Quadra_Atos_Model_Method_Abstract 
         // Initialisation du chemin de l'executable request
 	$binPath = $this->getConfig()->getBinRequest();
 
+        // Debug
+        if ($this->getConfigData('debug'))
+            $this->debugRequest($parameters);
+
         $sips = $this->getApiRequest()->doRequest($parameters, $binPath);
 
         if (($sips['code'] == "") && ($sips['error'] == "")) {

@@ -31,7 +31,7 @@ class Quadra_Atos_Block_Redirect_Aurore extends Mage_Core_Block_Abstract {
             // Has error
             $html .= $method->getSystemMessage();
         } else {
-            // Active debug
+            // Active debug in pathile
             $html .= $method->getSystemMessage();
             $html .= $method->getSystemResponse();
         }
