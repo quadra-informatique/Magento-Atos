@@ -12,7 +12,7 @@
  *
  * @author Quadra Informatique <ecommerce@quadra-informatique.fr>
  * @copyright 1997-2013 Quadra Informatique
- * @version Release: $Revision: 3.0.2 $
+ * @version Release: $Revision: 3.0.3 $
  * @license http://www.opensource.org/licenses/OSL-3.0 Open Software License (OSL 3.0)
  */
 class Quadra_Atos_PaymentController extends Mage_Core_Controller_Front_Action {
@@ -99,14 +99,14 @@ class Quadra_Atos_PaymentController extends Mage_Core_Controller_Front_Action {
 
         // Set redirect message
         $this->getAtosSession()->setRedirectTitle($this->__('Your payment has been rejected'));
-        $describedResponse = Mage::getSingleton('atos/api_response')->describeResponse($response['hash'], 'array');
+        $describedResponse = $this->getApiResponse()->describeResponse($response['hash'], 'array');
         $this->getAtosSession()->setRedirectMessage($this->__('The payment platform has rejected your transaction with the message: <strong>%s</strong>.', $describedResponse['response_code']));
 
         // Cancel order
         if ($response['hash']['order_id']) {
             $order = Mage::getModel('sales/order')->loadByIncrementId($response['hash']['order_id']);
             if ($response['hash']['response_code'] == 17) {
-                $message = Mage::getSingleton('atos/api_response')->describeResponse($response['hash']);
+                $message = $this->getApiResponse()->describeResponse($response['hash']);
             } else {
                 $message = $this->__('Automatic cancel');
                 $this->getAtosSession()->setRedirectMessage($this->__('The payment platform has rejected your transaction with the message: <strong>%s</strong>, because the bank send the error: <strong>%s</strong>.', $describedResponse['response_code'], $describedResponse['bank_response_code']));
@@ -186,7 +186,7 @@ class Quadra_Atos_PaymentController extends Mage_Core_Controller_Front_Action {
                 }
                 // Set redirect message
                 $this->getAtosSession()->setRedirectTitle($this->__('Your payment has been rejected'));
-                $describedResponse = Mage::getSingleton('atos/api_response')->describeResponse($response['hash']);
+                $describedResponse = $this->getApiResponse()->describeResponse($response['hash'], 'array');
                 $this->getAtosSession()->setRedirectMessage($this->__('The payment platform has rejected your transaction with the message: <strong>%s</strong>, because the bank send the error: <strong>%s</strong>.', $describedResponse['response_code'], $describedResponse['bank_response_code']));
                 // Set redirect URL
                 $response['redirect_url'] = '*/*/failure';
@@ -246,7 +246,7 @@ class Quadra_Atos_PaymentController extends Mage_Core_Controller_Front_Action {
             case '00':
                 if ($order->getId()) {
                     $message = $this->__('Payment accepted by Sips');
-                    $message .= '<br /><br />' . Mage::getSingleton('atos/api_response')->describeResponse($response['hash']);
+                    $message .= '<br /><br />' . $this->getApiResponse()->describeResponse($response['hash']);
                     // Update state and status order
                     $order->setState(Mage_Sales_Model_Order::STATE_PROCESSING, Quadra_Atos_Model_Config::STATUS_ACCEPTED, $message);
                     // Send confirmation email
@@ -261,7 +261,7 @@ class Quadra_Atos_PaymentController extends Mage_Core_Controller_Front_Action {
             default:
                 if ($order->getId()) {
                     $message = $this->__('Payment rejected by Sips');
-                    $message .= '<br /><br />' . Mage::getSingleton('atos/api_response')->describeResponse($response['hash']);
+                    $message .= '<br /><br />' . $this->getApiResponse()->describeResponse($response['hash']);
                     // Update state and status order
                     $order->setState(Mage_Sales_Model_Order::STATE_PAYMENT_REVIEW, Quadra_Atos_Model_Config::STATUS_REFUSED, $message);
                     // Save order

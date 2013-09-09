@@ -12,7 +12,7 @@
  *
  * @author Quadra Informatique <ecommerce@quadra-informatique.fr>
  * @copyright 1997-2013 Quadra Informatique
- * @version Release: $Revision: 3.0.2 $
+ * @version Release: $Revision: 3.0.3 $
  * @license http://www.opensource.org/licenses/OSL-3.0 Open Software License (OSL 3.0)
  */
 class Quadra_Atos_Block_Redirect_Standard extends Mage_Core_Block_Abstract {
